@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 public class AccountService {
 
     private final AccountRepository accountRepository;
-    private final ClientAccountRepository clientAccountRepository;
     private final ClientServiceProxy clientServiceProxy;
     private final ModelMapper modelMapper;
 
@@ -36,7 +35,7 @@ public class AccountService {
     public AccountDto getAccountById(Long id) {
 
         return accountRepository.findById(id)
-                .map(account -> modelMapper.map(account, AccountDto.class))
+                .map(this::convertToDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
     }
 
@@ -92,7 +91,11 @@ public class AccountService {
     private AccountDto convertToDto(Account account) {
         AccountDto accountDto = modelMapper.map(account, AccountDto.class);
         Set<ClientDto> clients = account.getClients().stream()
-                .map(client -> modelMapper.map(client, ClientDto.class))
+                .map(client -> {
+                    ClientDto clientDto = new ClientDto();
+                    clientDto.setId(client.getClientId());
+                    return clientDto;
+                })
                 .collect(Collectors.toSet());
         accountDto.setClients(clients);
         return accountDto;
