@@ -1,5 +1,6 @@
 package com.cjcaram.accounts.entity;
 
+import com.cjcaram.accounts.model.AccountType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,10 +24,12 @@ public class Account {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private String type;
+    private AccountType type;
 
     @Column(nullable = false)
     private BigDecimal balance;
+
+    private boolean active = true;
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     private Set<ClientAccount> clients;
