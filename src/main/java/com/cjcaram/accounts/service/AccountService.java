@@ -3,11 +3,8 @@ package com.cjcaram.accounts.service;
 import com.cjcaram.accounts.entity.Account;
 import com.cjcaram.accounts.entity.ClientAccount;
 import com.cjcaram.accounts.exception.ResourceNotFoundException;
-import com.cjcaram.accounts.model.AccountDto;
-import com.cjcaram.accounts.model.AccountType;
-import com.cjcaram.accounts.model.ClientDto;
+import com.cjcaram.accounts.model.*;
 import com.cjcaram.accounts.repository.AccountRepository;
-import com.cjcaram.accounts.repository.ClientAccountRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -24,6 +21,7 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final ClientServiceProxy clientServiceProxy;
+    private final TransactionServiceProxy transactionServiceProxy;
     private final ModelMapper modelMapper;
 
     public List<AccountDto> findAll() {
@@ -44,6 +42,30 @@ public class AccountService {
                 .stream()
                 .map(this::convertToDto)
                 .toList();
+    }
+
+    public AccountDetailDto getAccountDetails(Long accountId) {
+        // Fetch account
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+
+        // TODO: improve error handling when fetching data from microservices
+        // Fetch clients from Microservice
+        Set<Long> clientsIds = account.getClients().stream()
+                .map(ClientAccount::getClientId)
+                .collect(Collectors.toSet());
+        Set<ClientDto> clients = clientServiceProxy.getClientsByIds(clientsIds);
+
+        // Fetch transactions from Microservice
+        List<TransactionDto> transactions = transactionServiceProxy.getTransactionsByAccountId(accountId);
+
+        return AccountDetailDto.builder()
+                .type(account.getType().name())
+                .balance(account.getBalance())
+                .number(account.getNumber())
+                .clients(clients)
+                .transactions(transactions)
+                .build();
     }
 
     @Transactional

@@ -1,6 +1,7 @@
 package com.cjcaram.accounts.controller;
 
 import com.cjcaram.accounts.entity.Account;
+import com.cjcaram.accounts.model.AccountDetailDto;
 import com.cjcaram.accounts.model.AccountDto;
 import com.cjcaram.accounts.service.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -62,7 +63,12 @@ public class AccountController {
     @Operation(summary = "Get account by clientId")
     @GetMapping("/client/{id}")
     public ResponseEntity<List<AccountDto>> getClientsByIds(@PathVariable Long id) {
-
         return ResponseEntity.ok(accountService.getAccountsByClientId(id));
+    }
+
+    @GetMapping("/{accountId}/details")
+    public ResponseEntity<AccountDetailDto> getAccountDetails(@PathVariable Long accountId) {
+        AccountDetailDto accountDetails = accountService.getAccountDetails(accountId);
+        return ResponseEntity.ok(accountDetails);
     }
 }

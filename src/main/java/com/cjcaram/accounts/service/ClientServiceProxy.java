@@ -21,6 +21,7 @@ public class ClientServiceProxy {
     @Value("${microservice.client.url}")
     private String clientServiceUrl;
 
+    // TODO: add logs
     public Set<ClientDto> getClientsByIds(Set<Long> clientIds) {
         String url = clientServiceUrl + "/clients/by-ids";
         ResponseEntity<Set<ClientDto>> response = restTemplate.exchange(
